@@ -120,11 +120,20 @@ def main():
     spi = board.SPI()
     while not spi.try_lock():
         pass
-    spi.configure(baudrate=64000000)
+    spi.configure(baudrate=16000000)
     spi.unlock()
 
-    display_left = GC9A01(spi, cs=cs1_pin, dc=dc_pin, rst=reset_pin)
-    display_right = GC9A01(spi, cs=cs2_pin, dc=dc_pin, rst=reset_pin)
+    # Reset both displays globally
+    reset_pin.direction = digitalio.Direction.OUTPUT
+    reset_pin.value = True
+    time.sleep(0.1)
+    reset_pin.value = False
+    time.sleep(0.1)
+    reset_pin.value = True
+    time.sleep(0.1)
+
+    display_left = GC9A01(spi, cs=cs1_pin, dc=dc_pin, rst=None)
+    display_right = GC9A01(spi, cs=cs2_pin, dc=dc_pin, rst=None)
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
     swirl_path = os.path.join(base_dir, "assets", "swirl.png")

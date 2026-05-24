@@ -127,9 +127,18 @@ while not spi.try_lock():
 spi.configure(baudrate=64000000)
 spi.unlock()
 
-# Initialize displays
-display_left = GC9A01(spi, cs=cs1_pin, dc=dc_pin, rst=reset_pin)
-display_right = GC9A01(spi, cs=cs2_pin, dc=dc_pin, rst=reset_pin)
+# Reset both displays globally first
+reset_pin.direction = digitalio.Direction.OUTPUT
+reset_pin.value = True
+time.sleep(0.1)
+reset_pin.value = False
+time.sleep(0.1)
+reset_pin.value = True
+time.sleep(0.1)
+
+# Initialize displays without triggering individual resets
+display_left = GC9A01(spi, cs=cs1_pin, dc=dc_pin, rst=None)
+display_right = GC9A01(spi, cs=cs2_pin, dc=dc_pin, rst=None)
 
 WIDTH = 240
 HEIGHT = 240

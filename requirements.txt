@@ -1,0 +1,5 @@
+pygame==2.5.2
+Pillow==10.3.0
+adafruit-blinka==8.38.0
+adafruit-circuitpython-rgb-display
+numpy==1.26.4

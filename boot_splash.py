@@ -112,8 +112,8 @@ class GC9A01:
         self.command(0x2C, pixels)
 
 def main():
-    cs1_pin = digitalio.DigitalInOut(board.CE0)
-    cs2_pin = digitalio.DigitalInOut(board.CE1)
+    cs1_pin = digitalio.DigitalInOut(board.D17)
+    cs2_pin = digitalio.DigitalInOut(board.D27)
     dc_pin = digitalio.DigitalInOut(board.D25)
     reset_pin = digitalio.DigitalInOut(board.D24)
 

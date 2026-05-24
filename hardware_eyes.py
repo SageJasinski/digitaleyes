@@ -2,7 +2,7 @@ import time
 import math
 import random
 import os
-from PIL import Image
+from PIL import Image, ImageDraw
 import numpy as np
 
 import board
@@ -149,8 +149,17 @@ def main():
     sclera_img = Image.open(sclera_path).convert("RGB")
     iris_img = Image.open(iris_path).convert("RGBA")
 
-    sclera_img = sclera_img.resize((DISPLAY_SIZE, DISPLAY_SIZE))
+    # Zoom in the sclera so it perfectly fills the display without borders
+    sclera_img = sclera_img.resize((280, 280))
+    sclera_img = sclera_img.crop((20, 20, 260, 260))
+    
+    # Resize and apply a perfect circular mask to the iris to remove the black square
     iris_img = iris_img.resize((100, 100))
+    mask = Image.new('L', (100, 100), 0)
+    draw = ImageDraw.Draw(mask)
+    draw.ellipse((0, 0, 100, 100), fill=255)
+    iris_img.putalpha(mask)
+    
     iris_radius = 50
 
     target_x, target_y = 0, 0
@@ -186,6 +195,7 @@ def main():
 
         # Send the same frame to both displays
         display_left.draw_image(frame)
+        time.sleep(0.005) # Tiny delay to let CS lines settle between screens
         display_right.draw_image(frame)
 
 if __name__ == "__main__":

@@ -67,17 +67,31 @@ def main():
         current_x += (target_x - current_x) * 0.1
         current_y += (target_y - current_y) * 0.1
 
+        # --- 3D Spherical Projection Math ---
+        d = math.hypot(current_x, current_y)
+        R = 120.0 # Radius of the eyeball
+        d = min(d, R - 1)
+        
+        cos_theta = math.cos(math.asin(d / R))
+        phi = math.atan2(current_y, current_x)
+        
+        # Squash and rotate the iris using Pygame transforms
+        squashed_width = max(1, int(100 * cos_theta))
+        squashed_iris = pygame.transform.smoothscale(iris_img, (squashed_width, 100))
+        angle_deg = math.degrees(-phi)
+        rotated_iris = pygame.transform.rotate(squashed_iris, angle_deg)
+        
         screen.fill(BLACK)
 
         # Draw Left Eye
         screen.blit(sclera_img, (0, 0))
-        iris_pos_l = (CENTER_L[0] - iris_radius + current_x, CENTER_L[1] - iris_radius + current_y)
-        screen.blit(iris_img, iris_pos_l)
+        rect_l = rotated_iris.get_rect(center=(CENTER_L[0] + current_x, CENTER_L[1] + current_y))
+        screen.blit(rotated_iris, rect_l.topleft)
 
         # Draw Right Eye
         screen.blit(sclera_img, (240, 0))
-        iris_pos_r = (CENTER_R[0] - iris_radius + current_x, CENTER_R[1] - iris_radius + current_y)
-        screen.blit(iris_img, iris_pos_r)
+        rect_r = rotated_iris.get_rect(center=(CENTER_R[0] + current_x, CENTER_R[1] + current_y))
+        screen.blit(rotated_iris, rect_r.topleft)
 
         pygame.display.flip()
 

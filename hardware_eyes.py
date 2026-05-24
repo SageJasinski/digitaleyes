@@ -195,12 +195,31 @@ def main():
         # Create a fresh frame from sclera
         frame = sclera_img.copy()
 
-        # Calculate iris position
-        paste_x = int((DISPLAY_SIZE / 2) - iris_radius + current_x)
-        paste_y = int((DISPLAY_SIZE / 2) - iris_radius + current_y)
+        # --- 3D Spherical Projection Math ---
+        d = math.hypot(current_x, current_y)
+        R = 120.0 # Radius of the eyeball
+        d = min(d, R - 1) # Prevent math domain errors
+        
+        # Foreshortening factor (how much it squishes near the edge)
+        cos_theta = math.cos(math.asin(d / R))
+        
+        # Direction of movement
+        phi = math.atan2(current_y, current_x)
+        
+        # Squash the iris along the X axis
+        squashed_width = max(1, int(100 * cos_theta))
+        squashed_iris = iris_img.resize((squashed_width, 100))
+        
+        # Rotate the squashed iris so the squashed axis aligns with the movement direction
+        angle_deg = math.degrees(-phi)
+        rotated_iris = squashed_iris.rotate(angle_deg, expand=True, resample=Image.BICUBIC)
+        
+        # Calculate exactly where to paste it so it remains perfectly centered on current_x, current_y
+        paste_x = int((DISPLAY_SIZE / 2) + current_x - (rotated_iris.width / 2))
+        paste_y = int((DISPLAY_SIZE / 2) + current_y - (rotated_iris.height / 2))
 
-        # Paste iris with alpha transparency mask
-        frame.paste(iris_img, (paste_x, paste_y), mask=iris_img)
+        # Paste iris with its rotated alpha transparency mask
+        frame.paste(rotated_iris, (paste_x, paste_y), mask=rotated_iris)
 
         # Send the same frame to both displays
         display_left.draw_image(frame)
